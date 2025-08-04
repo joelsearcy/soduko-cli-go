@@ -26,37 +26,89 @@ const DigitPopover = ({ open, anchorEl, onClose, row, col }: DigitPopoverProps) 
   const [validNumbers, setValidNumbers] = useState<number[]>([]);
   const [isLoadingHints, setIsLoadingHints] = useState(false);
 
+  // Calculate valid numbers for current position
+  const calculateValidNumbers = (board: number[][], row: number, col: number): number[] => {
+    const valid: number[] = [];
+    
+    for (let num = 1; num <= 9; num++) {
+      let isValid = true;
+      
+      // Check row
+      for (let j = 0; j < 9; j++) {
+        if (j !== col && board[row][j] === num) {
+          isValid = false;
+          break;
+        }
+      }
+      
+      // Check column
+      if (isValid) {
+        for (let i = 0; i < 9; i++) {
+          if (i !== row && board[i][col] === num) {
+            isValid = false;
+            break;
+          }
+        }
+      }
+      
+      // Check 3x3 box
+      if (isValid) {
+        const startRow = Math.floor(row / 3) * 3;
+        const startCol = Math.floor(col / 3) * 3;
+        for (let i = startRow; i < startRow + 3; i++) {
+          for (let j = startCol; j < startCol + 3; j++) {
+            if (i !== row && j !== col && board[i][j] === num) {
+              isValid = false;
+              break;
+            }
+          }
+          if (!isValid) break;
+        }
+      }
+      
+      if (isValid) {
+        valid.push(num);
+      }
+    }
+    
+    return valid;
+  };
+
   // Fetch hints when popover opens and hint mode is enabled
   useEffect(() => {
-    if (open && state.isHintMode) {
-      const fetchHints = async () => {
-        try {
-          setIsLoadingHints(true);
-          const hints = await apiClient.getHint({
-            board: state.board,
-            row,
-            col,
-          });
-          setValidNumbers(hints.validNumbers);
-        } catch (error) {
-          console.error('Failed to fetch hints:', error);
-          // If hints fail, show all numbers as valid
-          setValidNumbers([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-        } finally {
-          setIsLoadingHints(false);
-        }
-      };
-
-      fetchHints();
-    } else {
-      // If hint mode is off, all numbers are valid
-      setValidNumbers([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    if (open) {
+      if (state.isHintMode) {
+        const fetchHints = async () => {
+          try {
+            setIsLoadingHints(true);
+            const hints = await apiClient.getHint({
+              board: state.board,
+              row,
+              col,
+            });
+            setValidNumbers(hints.validNumbers);
+          } catch (error) {
+            console.error('Failed to fetch hints:', error);
+            // If hints fail, fallback to local calculation
+            setValidNumbers(calculateValidNumbers(state.board, row, col));
+          } finally {
+            setIsLoadingHints(false);
+          }
+        };
+        fetchHints();
+      } else {
+        // When not in hint mode, calculate valid numbers locally
+        setValidNumbers(calculateValidNumbers(state.board, row, col));
+      }
     }
   }, [open, state.isHintMode, state.board, row, col]);
 
   const handleNumberClick = (number: number) => {
-    dispatch(gameActions.setCellValue(row, col, number));
-    onClose();
+    // Only allow valid moves
+    if (validNumbers.includes(number)) {
+      dispatch(gameActions.setCellValue(row, col, number));
+      onClose();
+    }
   };
 
   const handleClear = () => {
@@ -65,7 +117,6 @@ const DigitPopover = ({ open, anchorEl, onClose, row, col }: DigitPopoverProps) 
   };
 
   const isNumberValid = (number: number) => {
-    if (!state.isHintMode) return true;
     return validNumbers.includes(number);
   };
 
@@ -157,12 +208,14 @@ const DigitPopover = ({ open, anchorEl, onClose, row, col }: DigitPopoverProps) 
           </IconButton>
         </Box>
 
-        {/* Hint mode info */}
-        {state.isHintMode && !isLoadingHints && (
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
-            Gray numbers are invalid for this cell
-          </Typography>
-        )}
+        {/* Hint mode info - always present to prevent layout shift */}
+        <Box sx={{ height: '20px', mt: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          {state.isHintMode && !isLoadingHints && (
+            <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+              Gray numbers are invalid for this cell
+            </Typography>
+          )}
+        </Box>
       </Paper>
     </Popover>
   );

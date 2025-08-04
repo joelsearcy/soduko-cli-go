@@ -6,6 +6,9 @@ const SudokuBoard = () => {
   const { state, dispatch } = useGame();
 
   const handleCellClick = (row: number, col: number) => {
+    // Don't allow interactions when game is completed
+    if (state.isCompleted) return;
+    
     // Only allow selection of mutable cells
     if (state.mutableCells[row][col]) {
       dispatch(gameActions.setSelectedCell({ row, col }));
@@ -19,6 +22,20 @@ const SudokuBoard = () => {
         p: 2,
         display: 'inline-block',
         backgroundColor: 'background.paper',
+        opacity: state.isCompleted ? 0.8 : 1,
+        transition: 'opacity 0.3s ease',
+        position: 'relative',
+        '&::after': state.isCompleted ? {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(45deg, transparent 48%, rgba(76, 175, 80, 0.1) 49%, rgba(76, 175, 80, 0.1) 51%, transparent 52%)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        } : {},
       }}
     >
       <Box

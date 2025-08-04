@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -13,6 +13,10 @@ import {
   FormControlLabel,
   Alert,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   LightMode,
@@ -21,6 +25,7 @@ import {
   Help,
   HelpOutline,
 } from '@mui/icons-material';
+import confetti from 'canvas-confetti';
 import { useGame, gameActions } from '../store/GameContext';
 import { useTheme } from '../store/ThemeContext';
 import { SudokuApiClient } from '../api/client';
@@ -33,6 +38,90 @@ const SudokuGame = () => {
   const { state, dispatch } = useGame();
   const { mode, toggleTheme } = useTheme();
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Check for game completion
+  const checkGameCompletion = (board: number[][]) => {
+    // Check if all cells are filled
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 9; j++) {
+        if (board[i][j] === 0) return false;
+      }
+    }
+
+    // Check if the solution is valid
+    // Check rows
+    for (let i = 0; i < 9; i++) {
+      const seen = new Set();
+      for (let j = 0; j < 9; j++) {
+        if (seen.has(board[i][j])) return false;
+        seen.add(board[i][j]);
+      }
+    }
+
+    // Check columns
+    for (let j = 0; j < 9; j++) {
+      const seen = new Set();
+      for (let i = 0; i < 9; i++) {
+        if (seen.has(board[i][j])) return false;
+        seen.add(board[i][j]);
+      }
+    }
+
+    // Check 3x3 boxes
+    for (let boxRow = 0; boxRow < 3; boxRow++) {
+      for (let boxCol = 0; boxCol < 3; boxCol++) {
+        const seen = new Set();
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            const val = board[boxRow * 3 + i][boxCol * 3 + j];
+            if (seen.has(val)) return false;
+            seen.add(val);
+          }
+        }
+      }
+    }
+
+    return true;
+  };
+
+  // Trigger confetti celebration
+  const triggerConfetti = () => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+    
+    // Additional confetti bursts
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.8 }
+      });
+    }, 250);
+    
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.8 }
+      });
+    }, 400);
+  };
+
+  // Check for completion whenever the board changes
+  useEffect(() => {
+    if (!state.isCompleted) {
+      const isComplete = checkGameCompletion(state.board);
+      if (isComplete) {
+        dispatch(gameActions.setCompletion(true));
+        triggerConfetti();
+      }
+    }
+  }, [state.board, state.isCompleted, dispatch]);
 
   const handleNewGame = async (difficulty?: Difficulty) => {
     const targetDifficulty = difficulty || state.difficulty;
@@ -158,7 +247,56 @@ const SudokuGame = () => {
           Click on a cell to select it, then click a number 1-9 to fill it.
           {state.isHintMode && ' Hint mode will show invalid numbers in gray.'}
         </Typography>
+        {state.moveCount > 0 && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Moves: {state.moveCount}
+          </Typography>
+        )}
       </Box>
+
+      {/* Game Completion Dialog */}
+      <Dialog
+        open={state.isCompleted}
+        onClose={() => {}}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            textAlign: 'center',
+            py: 3,
+          }
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h4" color="primary" gutterBottom>
+            🎉 Congratulations! 🎉
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="h5" gutterBottom>
+            Solved in {state.moveCount} moves!
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Great job completing the {state.difficulty} puzzle!
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', gap: 2 }}>
+          <Button 
+            variant="contained" 
+            onClick={() => handleNewGame()}
+            size="large"
+          >
+            New Game
+          </Button>
+          <Button 
+            variant="outlined" 
+            onClick={() => dispatch(gameActions.setCompletion(false))}
+            size="large"
+          >
+            View Solution
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -12,6 +12,8 @@ const initialState: GameState = {
   difficulty: 'easy',
   isLoading: false,
   error: null,
+  moveCount: 0,
+  isCompleted: false,
 };
 
 // Action types
@@ -24,6 +26,7 @@ type GameAction =
   | { type: 'SET_CELL_VALUE'; payload: { row: number; col: number; value: number } }
   | { type: 'TOGGLE_HINT_MODE' }
   | { type: 'CLEAR_CELL'; payload: { row: number; col: number } }
+  | { type: 'SET_COMPLETION'; payload: boolean }
   | { type: 'RESET_GAME' };
 
 // Reducer function
@@ -48,6 +51,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         selectedCell: null,
         isLoading: false,
         error: null,
+        moveCount: 0,
+        isCompleted: false,
       };
     
     case 'SET_DIFFICULTY':
@@ -63,7 +68,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const newBoard = state.board.map((boardRow, i) =>
         boardRow.map((cell, j) => (i === row && j === col ? value : cell))
       );
-      return { ...state, board: newBoard };
+      return { 
+        ...state, 
+        board: newBoard, 
+        moveCount: state.moveCount + 1 
+      };
     
     case 'TOGGLE_HINT_MODE':
       return { ...state, isHintMode: !state.isHintMode };
@@ -75,7 +84,14 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const clearedBoard = state.board.map((boardRow, i) =>
         boardRow.map((cell, j) => (i === clearRow && j === clearCol ? 0 : cell))
       );
-      return { ...state, board: clearedBoard };
+      return { 
+        ...state, 
+        board: clearedBoard, 
+        moveCount: state.moveCount + 1 
+      };
+    
+    case 'SET_COMPLETION':
+      return { ...state, isCompleted: action.payload };
     
     case 'RESET_GAME':
       return {
@@ -83,6 +99,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         board: state.originalBoard.map(row => [...row]), // Reset to original
         selectedCell: null,
         error: null,
+        moveCount: 0,
+        isCompleted: false,
       };
     
     default:
@@ -142,5 +160,6 @@ export const gameActions = {
     type: 'CLEAR_CELL', 
     payload: { row, col } 
   }),
+  setCompletion: (completed: boolean): GameAction => ({ type: 'SET_COMPLETION', payload: completed }),
   resetGame: (): GameAction => ({ type: 'RESET_GAME' }),
 };

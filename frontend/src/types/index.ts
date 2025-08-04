@@ -13,6 +13,8 @@ export interface GameState {
   difficulty: Difficulty;
   isLoading: boolean;
   error: string | null;
+  moveCount: number;
+  isCompleted: boolean;
 }
 
 export interface GameStats {

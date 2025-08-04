@@ -1,16 +1,40 @@
 # IDE files
 .vscode/settings.json
 .vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
 
 # Go workspace file
 go.work
 go.work.sum
 
-# Test binary, built with `go test -c`
+# Go binaries and test files
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 *.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Node.js dependencies and build artifacts
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Frontend build outputs
+/frontend/build/
+/frontend/dist/
+.next/
+.nuxt/
+
+# Dependencies
+/vendor/
 
 # OS generated files
 .DS_Store

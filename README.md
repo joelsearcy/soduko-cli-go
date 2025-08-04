@@ -1,4 +1,79 @@
-# Sudoku Go Backend
+# Sudoku Application
+
+A full-stack Sudoku application with Go backend and TypeScript React frontend.
+
+## Project Structure
+
+```
+.
+├── backend/          # Go backend API server
+│   ├── cmd/          # Main applications
+│   ├── internal/     # Private application code
+│   └── go.mod        # Go module definition
+├── frontend/         # TypeScript React frontend
+│   ├── src/          # Source code
+│   ├── public/       # Static assets
+│   └── package.json  # Node.js dependencies
+└── README.md         # This file
+```
+
+## Features
+
+### Backend (Go)
+- Sudoku board generation with adjustable difficulty (Easy, Medium, Hard, Expert)
+- Board validation and solving
+- REST API for frontend communication
+- Clean architecture with separation of concerns
+
+### Frontend (TypeScript/React)
+- Interactive Sudoku game interface
+- Light/Dark theme toggle
+- Click-to-select cells with digit popover (3x3 grid)
+- Hint mode to gray out invalid options
+- Responsive design
+
+## Development
+
+### Backend
+```bash
+cd backend
+go run cmd/server/main.go
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm start
+```
+
+## Building
+
+### Backend
+```bash
+cd backend
+go build -o ../bin/sudoku-server cmd/server/main.go
+```
+
+### Frontend
+```bash
+cd frontend
+npm run build
+```
+
+## Testing
+
+### Backend
+```bash
+cd backend
+go test ./...
+```
+
+### Frontend
+```bash
+cd frontend
+npm test
+```
 
 This is a Go backend for a Sudoku application.
 

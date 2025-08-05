@@ -2,41 +2,22 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "backend-build",
+			"label": "build",
 			"type": "shell",
-			"command": "cd backend && go build ./...",
+			"command": "go build ./...",
 			"group": "build"
 		},
 		{
-			"label": "backend-test",
+			"label": "test",
 			"type": "shell",
-			"command": "cd backend && go test ./...",
+			"command": "go test ./...",
 			"group": "test"
 		},
 		{
-			"label": "frontend-install",
+			"label": "run",
 			"type": "shell",
-			"command": "cd frontend && npm install",
+			"command": "go run main.go",
 			"group": "build"
-		},
-		{
-			"label": "frontend-start",
-			"type": "shell",
-			"command": "cd frontend && npm run dev",
-			"group": "build",
-			"isBackground": true
-		},
-		{
-			"label": "frontend-build",
-			"type": "shell",
-			"command": "cd frontend && npm run build",
-			"group": "build"
-		},
-		{
-			"label": "frontend-test",
-			"type": "shell",
-			"command": "cd frontend && npm test",
-			"group": "test"
 		}
 	]
 }

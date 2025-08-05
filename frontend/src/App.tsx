@@ -1,4 +1,3 @@
-import { Container, Box } from '@mui/material';
 import { CustomThemeProvider } from './store/ThemeContext';
 import { GameProvider } from './store/GameContext';
 import SudokuGame from './pages/SudokuGame.tsx';
@@ -8,11 +7,7 @@ function App() {
   return (
     <CustomThemeProvider>
       <GameProvider>
-        <Container maxWidth="lg">
-          <Box sx={{ py: 4 }}>
-            <SudokuGame />
-          </Box>
-        </Container>
+        <SudokuGame />
       </GameProvider>
     </CustomThemeProvider>
   );

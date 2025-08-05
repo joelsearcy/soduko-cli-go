@@ -9,9 +9,8 @@ import {
 } from '@mui/material';
 import { Close, Backspace } from '@mui/icons-material';
 import { useGame, gameActions } from '../store/GameContext';
-import { SudokuApiClient } from '../api/client';
-
-const apiClient = new SudokuApiClient();
+import { localSudokuService } from '../api/localClient';
+import { isValidMove } from '../utils/sudoku';
 
 interface DigitPopoverProps {
   open: boolean;
@@ -31,42 +30,7 @@ const DigitPopover = ({ open, anchorEl, onClose, row, col }: DigitPopoverProps) 
     const valid: number[] = [];
     
     for (let num = 1; num <= 9; num++) {
-      let isValid = true;
-      
-      // Check row
-      for (let j = 0; j < 9; j++) {
-        if (j !== col && board[row][j] === num) {
-          isValid = false;
-          break;
-        }
-      }
-      
-      // Check column
-      if (isValid) {
-        for (let i = 0; i < 9; i++) {
-          if (i !== row && board[i][col] === num) {
-            isValid = false;
-            break;
-          }
-        }
-      }
-      
-      // Check 3x3 box
-      if (isValid) {
-        const startRow = Math.floor(row / 3) * 3;
-        const startCol = Math.floor(col / 3) * 3;
-        for (let i = startRow; i < startRow + 3; i++) {
-          for (let j = startCol; j < startCol + 3; j++) {
-            if (i !== row && j !== col && board[i][j] === num) {
-              isValid = false;
-              break;
-            }
-          }
-          if (!isValid) break;
-        }
-      }
-      
-      if (isValid) {
+      if (isValidMove(board, row, col, num)) {
         valid.push(num);
       }
     }
@@ -81,11 +45,7 @@ const DigitPopover = ({ open, anchorEl, onClose, row, col }: DigitPopoverProps) 
         const fetchHints = async () => {
           try {
             setIsLoadingHints(true);
-            const hints = await apiClient.getHint({
-              board: state.board,
-              row,
-              col,
-            });
+            const hints = await localSudokuService.getHintsAsync(state.board, row, col);
             setValidNumbers(hints.validNumbers);
           } catch (error) {
             console.error('Failed to fetch hints:', error);

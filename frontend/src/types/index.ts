@@ -1,8 +1,17 @@
 // TypeScript type definitions for the Sudoku application
 
-export type Board = number[][];
+// Import Sudoku utility types
+import type {
+  Board,
+  Difficulty,
+  ValidationError,
+  ValidationResult,
+  HintResult,
+  GeneratedBoard,
+} from '../utils/sudoku';
 
-export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
+// Re-export for convenience
+export type { Board, Difficulty, ValidationError, ValidationResult, HintResult, GeneratedBoard };
 
 export interface GameState {
   board: Board;
@@ -29,6 +38,7 @@ export interface ApiError {
   status?: number;
 }
 
+// Legacy API types for backward compatibility
 export interface GenerateBoardRequest {
   difficulty: Difficulty;
 }
@@ -45,11 +55,7 @@ export interface ValidateBoardRequest {
 export interface ValidateBoardResponse {
   isValid: boolean;
   isComplete: boolean;
-  errors?: Array<{
-    row: number;
-    col: number;
-    message: string;
-  }>;
+  errors?: ValidationError[];
 }
 
 export interface HintRequest {
